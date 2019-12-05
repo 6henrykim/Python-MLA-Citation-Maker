@@ -1,13 +1,18 @@
 """
-    Creates MLA citation page based on input from the user
+    Creates MLA citation page Docx based on input from Excel Spreadsheet
 """
 
 #import libraries
 from docx import Document
+from openpyxl import Workbook
+from openpyxl import load_workbook
+
 
 """
+-------------------------------------------------------------------------------------------------------------------------------------------
     Class that holds the attributes for each citation and the functions for getting
-    that data from the user
+    that data from spreadsheet
+-------------------------------------------------------------------------------------------------------------------------------------------
 """
 class Citation:
     def __init__(self):
@@ -23,17 +28,30 @@ class Citation:
         self.datePublished = ""      #date published or updated online
         self.dateAccessed = ""       #date website accessed
 
-    def inputAuthors(self):
-        self.numAuthors = input("How many authors? ")
-        
-        lastName = input("Enter last name: ")
-        firstName = input("Enter first name: ")
-        middleInitial = input("Enter middle initial: ")
-        
-        self.authors.append(lastName + ", " + firstName + " " + middleInitial + ".")
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to get the name of the output file from the user
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def inputExcelFileName():
+    
+    fileExtension = ".xlsx"
+    
+    #get a name of file from user
+    fileName = input("Enter name of Excel file: ")
+    
+    #append .xlsx if input name doesn't have it
+    if (fileName.endswith(fileExtension) == False):
+        fileName += fileExtension
+
+    #return the name of the file
+    return fileName
+
 
 """
+-------------------------------------------------------------------------------------------------------------------------------------------
     Function to get the name of the output file from the user
+-------------------------------------------------------------------------------------------------------------------------------------------
 """
 def inputCitationFileName():
     
@@ -45,8 +63,8 @@ def inputCitationFileName():
     fileName = input("Where to save citations: ")
     
     #append .docx if input name doesn't have it
-    if (fileName.endswith(fileExtension) != True):
-        fileName += ".docx"
+    if (fileName.endswith(fileExtension) == False):
+        fileName += fileExtension
 
     #return the name of the file
     return fileName
@@ -57,17 +75,55 @@ def inputCitationFileName():
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
     Main function execution
+-------------------------------------------------------------------------------------------------------------------------------------------
 """
+
 print("MLA Citation Maker")    
 
-documentName = inputCitationFileName()
+excelFileOpened = True
 
-#try to open the document or create it if it doesn't exist
+excelFileName = inputExcelFileName()
+#try to open the excel sheet
 try:
-    document = Document(documentName)
+    #load workbook need to import library
+    workbook = load_workbook(filename = excelFileName)
+    sheetName = workbook.sheetnames[0]
+    sheet = workbook[sheetName]
 except:
-    document = Document()
+    print("Failed to open Excel sheet ")
+    excelFileOpened = False
 
+
+
+#Continue if the excel file opened
+if excelFileOpened:
+    
+    documentName = inputCitationFileName()
+    #try to open the document or create it if it doesn't exist
+    try:
+        document = Document(documentName)
+    except:
+        document = Document()
+
+    print("Succesfully opened both")
+
+    
+    document.add_paragraph("Works Cited")
+    document.save(documentName)
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 #write heading
 document.add_paragraph("Works Cited")
 
@@ -79,5 +135,22 @@ p.add_run(firstCitation.authors[0])
 
 #Save the document
 document.save(documentName)
+"""
+
+"""
+#read sheet
+#load workbook need to import library
+wb2 = load_workbook(filename = 'readSheet.xlsx')
+#get the name of the first sheet
+sheetName2 = wb2.sheetnames[0]
+#connect the worksheet object using the sheet name
+worksheet2 = wb2[sheetName2]
+print(worksheet2.cell(row = 1, column = 1).value)
+print(worksheet2.cell(row = 2, column = 2).value)
+if (worksheet2.cell(row = 2, column = 2).value) == None:
+    print("That cell was empty")
+"""
+
+
 
 
