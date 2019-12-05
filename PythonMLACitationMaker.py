@@ -10,17 +10,18 @@ from docx import Document
     that data from the user
 """
 class Citation:
-    numAuthors = 0          #add et al. if more than 2
-    authors = []            #list for each author name stored as string
-    title = ""              #title of article
-    container = ""          #title of collection or website
-    contributors = []       #editors etc
-    version = ""            #edition or version
-    number = 0              #number or vol
-    publisher = ""          #publisher
-    location = ""           #page numbers or url
-    datePublished = ""      #date published or updated online
-    dateAccessed = ""       #date website accessed
+    def __init__(self):
+        self.numAuthors = 0          #add et al. if more than 2
+        self.authors = []            #list for each author name stored as string
+        self.title = ""              #title of article
+        self.container = ""          #title of collection or website
+        self.contributors = []       #editors etc
+        self.version = ""            #edition or version
+        self.number = 0              #number or vol
+        self.publisher = ""          #publisher
+        self.location = ""           #page numbers or url
+        self.datePublished = ""      #date published or updated online
+        self.dateAccessed = ""       #date website accessed
 
     def inputAuthors(self):
         self.numAuthors = input("How many authors? ")
@@ -51,7 +52,10 @@ def inputCitationFileName():
     return fileName
 
 
+
+
 """
+-------------------------------------------------------------------------------------------------------------------------------------------
     Main function execution
 """
 print("MLA Citation Maker")    
