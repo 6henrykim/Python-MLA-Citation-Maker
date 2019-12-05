@@ -1,13 +1,16 @@
 """
-    Creates MLA citation page based on input from the user
+    Creates MLA citation page Docx based on input from Excel Spreadsheet
 """
 
 #import libraries
 from docx import Document
+from openpyxl import Workbook
+from openpyxl import load_workbook
+
 
 """
     Class that holds the attributes for each citation and the functions for getting
-    that data from the user
+    that data from spreadsheet
 """
 class Citation:
     def __init__(self):
