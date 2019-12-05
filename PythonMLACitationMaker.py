@@ -90,8 +90,9 @@ try:
     sheetName = workbook.sheetnames[0]
     sheet = workbook[sheetName]
 except:
-    print("Failed to open Excel sheet ")
     excelFileOpened = False
+    print("Failed to open Excel sheet ")
+    input("Press Enter to quit")
 
 
 
