@@ -6,6 +6,10 @@
 
 #import libraries
 from docx import Document
+from docx.shared import Pt
+from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Length
 from openpyxl import Workbook
 from openpyxl import load_workbook
 import datetime
@@ -34,7 +38,7 @@ COL_PUBLISHER = 13
 COL_DATE_PUBLISHED = 14
 COL_LOCATION = 15
 COL_DATE_ACCESSED = 16
-#to access data
+#to access data:
 #sheet.cell(row, COLUMN).value
 
 
@@ -166,6 +170,7 @@ def convertNumToMonth(num):
 
 print("MLA Citation Maker")    
 
+#flags for whether the files opened properly
 excelFileOpened = True
 
 excelFileName = inputExcelFileName()
@@ -182,39 +187,63 @@ except:
     input("Press Enter to quit")
 
 
-
-#Continue if the excel file opened
+#Try to open the Word doc if the Excel file opened
 if excelFileOpened:
     
     documentName = inputCitationFileName()
-    #try to open the document or create it if it doesn't exist
+    #try to open the document specified or create it if it can't be found
     try:
         document = Document(documentName)
     except:
         document = Document()
 
     print("Succesfully opened both")
-    document.add_paragraph("Works Cited")
 
+    #Write the heading to the citation doc
+    heading = document.add_paragraph()
+    headingRun = heading.add_run("Works Cited")
+    headingFont = headingRun.font
+    headingFont.name = "Times New Roman"
+    headingFont.size = Pt(12)
+    headerFormatting = heading.paragraph_format
+    headerFormatting.line_spacing_rule = 2   #set double spaceing
+    headerFormatting.alignment = WD_ALIGN_PARAGRAPH.CENTER #center the heading
 
-    citation = Citation()
-    citation.inputDatePublished(4)
-    citation.inputDateAccessed(4)
-
-    print(citation.datePublished)
-    print(citation.dateAccessed)
+    #Citation Formatting
+    paragraph = document.add_paragraph()
+    run = paragraph.add_run("Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text ")
+    font = run.font
+    font.name = "Times New Roman"
+    font.size = Pt(12)
+    paragraphFormatting = paragraph.paragraph_format
+    paragraphFormatting.line_spacing_rule = 2   #set double spaceing
+    paragraphFormatting.keep_together = True    #keeps citation on same page
+    paragraphFormatting.left_indent = Inches(0.5)   #indent citations
+    paragraphFormatting.first_line_indent = Inches(-0.5)    #negative to make fist line hanging indent
     
+
+
+
+
+
+
+
+
+
     
     document.save(documentName)
 
 
 
 
+"""
+citation = Citation()
+citation.inputDatePublished(4)
+citation.inputDateAccessed(4)
 
-
-
-
-
+print(citation.datePublished)
+print(citation.dateAccessed)
+"""
 
 
 """
