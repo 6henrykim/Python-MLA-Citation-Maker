@@ -127,6 +127,6 @@ dmypy.json
 # Resulting word docs
 *.docx
 
-# Excel document used
+# Excel documents used
 *.xlsx
 !template.xlsx	#keep this Excel file
