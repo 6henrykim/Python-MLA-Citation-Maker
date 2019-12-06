@@ -6,6 +6,7 @@
 from docx import Document
 from openpyxl import Workbook
 from openpyxl import load_workbook
+import datetime
 
 
 """
@@ -25,8 +26,18 @@ class Citation:
         self.number = 0              #number or vol
         self.publisher = ""          #publisher
         self.location = ""           #page numbers or url
-        self.datePublished = ""      #date published or updated online
+        self.datePublished = "10"      #date published or updated 
         self.dateAccessed = ""       #date website accessed
+
+    def inputDatePublished(self, row, column):
+
+        date = sheet.cell(row, column).value
+        
+        if(type(date) == datetime.datetime):
+            self.datePublished = str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+            
+
+        
 
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -70,6 +81,39 @@ def inputCitationFileName():
     return fileName
 
 
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to return a month string based on number
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def convertNumToMonth(num):
+    if num == 1:
+        return "Jan"
+    elif num == 2:
+        return "Feb"
+    elif num == 3:
+        return "Mar"
+    elif num == 4:
+        return "Apr"
+    elif num == 5:
+        return "May"
+    elif num == 6:
+        return "Jun"
+    elif num == 7:
+        return "Jul"
+    elif num == 8:
+        return "Aug"
+    elif num == 9:
+        return "Sep"
+    elif num == 10:
+        return "Oct"
+    elif num == 11:
+        return "Nov"
+    elif num == 12:
+        return "Dec"
+    else:
+        return "???"
+            
 
 
 """
@@ -92,6 +136,7 @@ try:
 except:
     excelFileOpened = False
     print("Failed to open Excel sheet ")
+    #pause for user to see error message
     input("Press Enter to quit")
 
 
@@ -108,11 +153,17 @@ if excelFileOpened:
 
     print("Succesfully opened both")
 
-    
     document.add_paragraph("Works Cited")
+
+
+    citation = Citation()
+    citation.inputDatePublished(1, 4)
+    print(citation.datePublished)
+    
+    print(type(sheet.cell(1, 4).value))
+    print(type("Hello"))
+    
     document.save(documentName)
-
-
 
 
 
