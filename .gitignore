@@ -129,3 +129,4 @@ dmypy.json
 
 # Excel document used
 *.xlsx
+!template.xlsx	#keep this Excel file
