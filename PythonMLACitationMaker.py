@@ -172,11 +172,12 @@ print("MLA Citation Maker")
 
 #flags for whether the files opened properly
 excelFileOpened = True
+citationFileOpened = True
 
 excelFileName = inputExcelFileName()
-#try to open the excel sheet
+#try to open the Excel file
 try:
-    #load workbook need to import library
+    #load workbook 
     workbook = load_workbook(filename = excelFileName)
     sheetName = workbook.sheetnames[0]
     sheet = workbook[sheetName]
@@ -191,12 +192,23 @@ except:
 if excelFileOpened:
     
     documentName = inputCitationFileName()
-    #try to open the document specified or create it if it can't be found
+    #try to open the document specified
     try:
         document = Document(documentName)
+        document.save(documentName)
+    #display error message if file couldn't be opened and saved
+    except PermissionError:
+        citationFileOpened = False
+        print("Failed to open file: make sure no program has the file open")
+        #pause for user to see error message
+        input("Press Enter to quit")
+    #otherwise create the file
     except:
         document = Document()
+        document.save(documentName)
 
+#Continue if both files opened
+if excelFileOpened and citationFileOpened:
     print("Succesfully opened both")
 
     #Write the heading to the citation doc
