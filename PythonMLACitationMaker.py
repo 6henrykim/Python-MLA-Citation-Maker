@@ -179,11 +179,13 @@ excelFileName = inputExcelFileName()
 try:
     #load workbook 
     workbook = load_workbook(filename = excelFileName)
+    #get the name of the first worksheet
     sheetName = workbook.sheetnames[0]
+    #set the sheet using the name of the first worksheet
     sheet = workbook[sheetName]
 except:
     excelFileOpened = False
-    print("Failed to open Excel sheet ")
+    print("Failed to open \"" + excelFileName + "\"")
     #pause for user to see error message
     input("Press Enter to quit")
 
@@ -192,14 +194,14 @@ except:
 if excelFileOpened:
     
     documentName = inputCitationFileName()
-    #try to open the document specified
+    #try to open the specified excel file
     try:
         document = Document(documentName)
         document.save(documentName)
     #display error message if file couldn't be opened and saved
     except PermissionError:
         citationFileOpened = False
-        print("Failed to open file: make sure no program has the file open")
+        print("Failed to open \"" + documentName + "\": make sure no program has the file open")
         #pause for user to see error message
         input("Press Enter to quit")
     #otherwise create the file
@@ -209,7 +211,7 @@ if excelFileOpened:
 
 #Continue if both files opened
 if excelFileOpened and citationFileOpened:
-    print("Succesfully opened both")
+    print("Succesfully accessed both files")
 
     #Write the heading to the citation doc
     heading = document.add_paragraph()
@@ -220,6 +222,7 @@ if excelFileOpened and citationFileOpened:
     headerFormatting = heading.paragraph_format
     headerFormatting.line_spacing_rule = 2   #set double spaceing
     headerFormatting.alignment = WD_ALIGN_PARAGRAPH.CENTER #center the heading
+    headerFormatting.page_break_before = True    #put header on a new page
 
     #Citation Formatting
     paragraph = document.add_paragraph()
@@ -242,7 +245,7 @@ if excelFileOpened and citationFileOpened:
 
 
 
-    
+    #Save the file
     document.save(documentName)
 
 
