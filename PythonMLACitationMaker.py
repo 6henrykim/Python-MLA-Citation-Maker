@@ -159,7 +159,17 @@ def convertNumToMonth(num):
         return "Dec"
     else:
         return "???"
-            
+
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function format heading and citation runs to be Times New Roman and point 12
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def formatRun(run):
+    font = run.font
+    font.name = "Times New Roman"
+    font.size = Pt(12)
+    
 
 
 """
@@ -215,27 +225,22 @@ if excelFileOpened and citationFileOpened:
 
     #Write the heading to the citation doc
     heading = document.add_paragraph()
-    headingRun = heading.add_run("Works Cited")
-    headingFont = headingRun.font
-    headingFont.name = "Times New Roman"
-    headingFont.size = Pt(12)
     headerFormatting = heading.paragraph_format
     headerFormatting.line_spacing_rule = 2   #set double spaceing
     headerFormatting.alignment = WD_ALIGN_PARAGRAPH.CENTER #center the heading
     headerFormatting.page_break_before = True    #put header on a new page
+    headingRun = heading.add_run("Works Cited")
+    formatRun(headingRun)
 
     #Citation Formatting
     paragraph = document.add_paragraph()
-    run = paragraph.add_run("Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text ")
-    font = run.font
-    font.name = "Times New Roman"
-    font.size = Pt(12)
     paragraphFormatting = paragraph.paragraph_format
     paragraphFormatting.line_spacing_rule = 2   #set double spaceing
     paragraphFormatting.keep_together = True    #keeps citation on same page
     paragraphFormatting.left_indent = Inches(0.5)   #indent citations
     paragraphFormatting.first_line_indent = Inches(-0.5)    #negative to make fist line hanging indent
-    
+    run = paragraph.add_run("Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text ")
+    formatRun(run)
 
 
 
