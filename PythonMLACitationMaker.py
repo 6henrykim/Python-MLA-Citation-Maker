@@ -1,5 +1,7 @@
 """
-    Creates MLA citation page Docx based on input from Excel Spreadsheet
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Creates a Word Doc with citations from an Excel spreadsheet specified by the user
+-------------------------------------------------------------------------------------------------------------------------------------------
 """
 
 #import libraries
@@ -7,6 +9,34 @@ from docx import Document
 from openpyxl import Workbook
 from openpyxl import load_workbook
 import datetime
+
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Row and Column numbers in Excel
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+ROW_DATA_STARTS = 2
+#rows with data starts at 2
+
+COL_NUM_AUTHORS = 1
+COL_AUTH1_LAST_NAME = 2
+COL_AUTH1_FIRST_NAME = 3
+COL_AUTH1_MI = 4
+COL_AUTH2_LAST_NAME = 5
+COL_AUTH2_FIRST_NAME = 6
+COL_AUTH2_MI = 7
+COL_TITLE = 8
+COL_CONTAINER = 9
+COL_CONTRIBUTORS = 10
+COL_VERSION = 11
+COL_NUMBER = 12
+COL_PUBLISHER = 13
+COL_DATE_PUBLISHED = 14
+COL_LOCATION = 15
+COL_DATE_ACCESSED = 16
+#to access data
+#sheet.cell(row, COLUMN).value
+
 
 
 """
@@ -17,25 +47,37 @@ import datetime
 """
 class Citation:
     def __init__(self):
-        self.numAuthors = 0          #add et al. if more than 2
-        self.authors = []            #list for each author name stored as string
+        self.numAuthors = 0          #number of authors add et al. if more than 2
+        self.authors = ""            #list of authors in string format
         self.title = ""              #title of article
         self.container = ""          #title of collection or website
-        self.contributors = []       #editors etc
+        self.contributors = ""       #editors etc
         self.version = ""            #edition or version
         self.number = 0              #number or vol
         self.publisher = ""          #publisher
         self.location = ""           #page numbers or url
-        self.datePublished = "10"      #date published or updated 
+        self.datePublished = ""      #date published or updated 
         self.dateAccessed = ""       #date website accessed
 
-    def inputDatePublished(self, row, column):
-
-        date = sheet.cell(row, column).value
-        
+    #Read from Excel and store date for publishing
+    def inputDatePublished(self, row):
+        date = sheet.cell(row, COL_DATE_PUBLISHED).value
+        #if date is in datetime format convert into a string
         if(type(date) == datetime.datetime):
             self.datePublished = str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
-            
+        else:
+            self.datePublished = str(date)
+
+    
+    #Read from Excel and store accessed date
+    def inputDateAccessed(self, row):
+        date = sheet.cell(row, COL_DATE_ACCESSED).value
+        #if date is in datetime format convert into a string
+        if(type(date) == datetime.datetime):
+            self.dateAccessed = "Acessed " + str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        else:
+            self.dateAcessed = "Accessed " + str(date)
+    
 
         
 
@@ -152,16 +194,16 @@ if excelFileOpened:
         document = Document()
 
     print("Succesfully opened both")
-
     document.add_paragraph("Works Cited")
 
 
     citation = Citation()
-    citation.inputDatePublished(1, 4)
+    citation.inputDatePublished(4)
+    citation.inputDateAccessed(4)
+
     print(citation.datePublished)
+    print(citation.dateAccessed)
     
-    print(type(sheet.cell(1, 4).value))
-    print(type("Hello"))
     
     document.save(documentName)
 
