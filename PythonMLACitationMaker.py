@@ -25,10 +25,10 @@ ROW_DATA_STARTS = 2
 COL_NUM_AUTHORS = 1
 COL_AUTH1_LAST_NAME = 2
 COL_AUTH1_FIRST_NAME = 3
-COL_AUTH1_MI = 4
+COL_AUTH1_MIDDLE_NAME = 4
 COL_AUTH2_LAST_NAME = 5
 COL_AUTH2_FIRST_NAME = 6
-COL_AUTH2_MI = 7
+COL_AUTH2_MIDDLE_NAME = 7
 COL_TITLE = 8
 COL_CONTAINER = 9
 COL_CONTRIBUTORS = 10
@@ -63,22 +63,64 @@ class Citation:
         self.datePublished = ""      #date published or updated 
         self.dateAccessed = ""       #date website accessed
 
+    #Read from Excel and store authors 
+    def readAuthors(self, row):
+        
+        #read the number of authors user wants to record
+        self.numAuthors = sheet.cell(row, COL_NUM_AUTHORS).value
+
+        #get data from each column
+        author1LastName = sheet.cell(row, COL_AUTH1_LAST_NAME).value
+        author1FirstName = sheet.cell(row, COL_AUTH1_FIRST_NAME).value
+        author1FullName = str(author1LastName) + ", " + str(author1FirstName)
+        #if the middle initial column is filled add it to full name
+        author1MiddleName = sheet.cell(row, COL_AUTH1_MIDDLE_NAME).value
+        if author1MiddleName != None:
+            author1FullName += " " + str(author1MiddleName)
+
+        #get data from each column
+        author2LastName = sheet.cell(row, COL_AUTH2_LAST_NAME).value
+        author2FirstName = sheet.cell(row, COL_AUTH2_FIRST_NAME).value
+        author2FullName = str(author2FirstName) 
+        #if the middle initial column is filled add it to full name
+        author2MiddleName = sheet.cell(row, COL_AUTH2_MIDDLE_NAME).value
+        if author2MiddleName != None:
+            author2FullName += " " + str(author2MiddleName)
+        author2FullName += " " + str(author2LastName) 
+
+        #assemble final string according to number of authors
+        if self.numAuthors == None or self.numAuthors == 0:
+            self.authors = ""
+        elif self.numAuthors == 1:
+            #one author format: LastName1, FirstName1 MiddleName1
+            self.authors = author1FullName
+        elif self.numAuthors == 2:
+            #two author format: LastName1, FirstName1 MiddleName1 and FirstName2 MiddleName2 LastName2
+            self.authors = author1FullName + " and " + author2FullName
+        else:
+            #more than 2 authors format: LastName1, FirstName1 MiddleName1, et al.
+            self.authors = author1FullName + ", et al."
+
+
+    
     #Read from Excel and store date for publishing
-    def inputDatePublished(self, row):
+    def readDatePublished(self, row):
         date = sheet.cell(row, COL_DATE_PUBLISHED).value
         #if date is in datetime format convert into a string
         if(type(date) == datetime.datetime):
             self.datePublished = str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        #otherwise store it as a string
         else:
             self.datePublished = str(date)
 
     
     #Read from Excel and store accessed date
-    def inputDateAccessed(self, row):
+    def readDateAccessed(self, row):
         date = sheet.cell(row, COL_DATE_ACCESSED).value
         #if date is in datetime format convert into a string
         if(type(date) == datetime.datetime):
-            self.dateAccessed = "Acessed " + str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+            self.dateAccessed = "Accessed " + str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        #otherwise store it as a string
         else:
             self.dateAcessed = "Accessed " + str(date)
     
@@ -204,7 +246,7 @@ except:
 if excelFileOpened:
     
     documentName = inputCitationFileName()
-    #try to open the specified excel file
+    #try to open the specified file and save it to make sure it's not being used by another program
     try:
         document = Document(documentName)
         document.save(documentName)
@@ -226,9 +268,9 @@ if excelFileOpened and citationFileOpened:
     #Write the heading to the citation doc
     heading = document.add_paragraph()
     headerFormatting = heading.paragraph_format
-    headerFormatting.line_spacing_rule = 2   #set double spaceing
-    headerFormatting.alignment = WD_ALIGN_PARAGRAPH.CENTER #center the heading
-    headerFormatting.page_break_before = True    #put header on a new page
+    headerFormatting.line_spacing_rule = 2                      #set double spaceing
+    headerFormatting.alignment = WD_ALIGN_PARAGRAPH.CENTER      #center the heading
+    headerFormatting.page_break_before = True                   #put header on a new page
     headingRun = heading.add_run("Works Cited")
     formatRun(headingRun)
 
@@ -243,7 +285,14 @@ if excelFileOpened and citationFileOpened:
     formatRun(run)
 
 
-
+    citation = Citation()
+    citation.readAuthors(2)
+    citation.readAuthors(3)
+    citation.readAuthors(4)
+    citation.readAuthors(5)
+    citation.readAuthors(6)
+    citation.readAuthors(7)
+    citation.readAuthors(8)
 
 
 
@@ -252,6 +301,13 @@ if excelFileOpened and citationFileOpened:
 
     #Save the file
     document.save(documentName)
+
+
+
+
+
+
+
 
 
 
