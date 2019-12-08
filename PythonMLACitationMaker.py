@@ -50,7 +50,8 @@ COL_DATE_ACCESSED = 16
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 class Citation:
-    def __init__(self):
+    def __init__(self, worksheet):
+        self.sheet = worksheet            #the excel sheet  
         self.numAuthors = 0          #number of authors add et al. if more than 2
         self.authors = ""            #list of authors in string format
         self.title = ""              #title of article
@@ -67,29 +68,29 @@ class Citation:
     def readAuthors(self, row):
         
         #read the number of authors user wants to record
-        self.numAuthors = sheet.cell(row, COL_NUM_AUTHORS).value
+        self.numAuthors = self.sheet.cell(row, COL_NUM_AUTHORS).value
 
         #get data from each column
-        author1LastName = sheet.cell(row, COL_AUTH1_LAST_NAME).value
+        author1LastName = self.sheet.cell(row, COL_AUTH1_LAST_NAME).value
         author1FullName = str(author1LastName).capitalize()
         #if the first name column is filled add it to full name
-        author1FirstName = sheet.cell(row, COL_AUTH1_FIRST_NAME).value
+        author1FirstName = self.sheet.cell(row, COL_AUTH1_FIRST_NAME).value
         if author1FirstName != None:         
             author1FullName += ", " + str(author1FirstName).capitalize()
             #if the middle name column is filled add it to full name
-            author1MiddleName = sheet.cell(row, COL_AUTH1_MIDDLE_NAME).value
+            author1MiddleName = self.sheet.cell(row, COL_AUTH1_MIDDLE_NAME).value
             if author1MiddleName != None:
                 author1FullName += " " + str(author1MiddleName).capitalize()
 
         #get data from each column
-        author2FirstName = sheet.cell(row, COL_AUTH2_FIRST_NAME).value
+        author2FirstName = self.sheet.cell(row, COL_AUTH2_FIRST_NAME).value
         author2FullName = str(author2FirstName).capitalize()
         #if the middle name column is filled add it to full name
-        author2MiddleName = sheet.cell(row, COL_AUTH2_MIDDLE_NAME).value
+        author2MiddleName = self.sheet.cell(row, COL_AUTH2_MIDDLE_NAME).value
         if author2MiddleName != None:
             author2FullName += " " + str(author2MiddleName).capitalize()
         #if the last name column is filled add it to full name
-        author2LastName = sheet.cell(row, COL_AUTH2_LAST_NAME).value
+        author2LastName = self.sheet.cell(row, COL_AUTH2_LAST_NAME).value
         if author2LastName != None:
             author2FullName += " " + str(author2LastName).capitalize()
 
@@ -109,11 +110,11 @@ class Citation:
     #Read from Excel and store title
     def readTitle(self, row):
 
-        #list of words that shouldn't be capitalized
+        #list of words that shouldn't be capitalized including articles, prepositions, and coordinate conjunctives
         dontCapitalize = ["the", "a", "an", "with", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "along", "for", "from", "of", "on", "to", "with", "without"]
 
         #read the data
-        uncapitalizedTitle = sheet.cell(row, COL_TITLE).value
+        uncapitalizedTitle = self.sheet.cell(row, COL_TITLE).value
 
         #check that the title column wasn't empty
         if uncapitalizedTitle != None:
@@ -152,7 +153,7 @@ class Citation:
     
     #Read from Excel and store date for publishing
     def readDatePublished(self, row):
-        date = sheet.cell(row, COL_DATE_PUBLISHED).value
+        date = self.sheet.cell(row, COL_DATE_PUBLISHED).value
         #if date is in datetime format convert into a string
         if(type(date) == datetime.datetime):
             self.datePublished = str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
@@ -166,7 +167,7 @@ class Citation:
     
     #Read from Excel and store accessed date
     def readDateAccessed(self, row):
-        date = sheet.cell(row, COL_DATE_ACCESSED).value
+        date = self.sheet.cell(row, COL_DATE_ACCESSED).value
         #if date is in datetime format convert into a string
         if(type(date) == datetime.datetime):
             self.dateAccessed = "Accessed " + str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
@@ -290,7 +291,7 @@ try:
     #get the name of the first worksheet
     sheetName = workbook.sheetnames[0]
     #set the sheet using the name of the first worksheet
-    sheet = workbook[sheetName]
+    worksheet = workbook[sheetName]
 except:
     excelFileOpened = False
     print("Failed to open \"" + excelFileName + "\"")
@@ -343,7 +344,7 @@ if excelFileOpened and citationFileOpened:
 
     for x in range(2, 11):
         
-        citation = Citation()
+        citation = Citation(worksheet)
         citation.readAuthors(x)
         print(citation.authors)
         citation.readTitle(x)
