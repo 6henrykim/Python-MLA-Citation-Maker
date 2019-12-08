@@ -51,7 +51,7 @@ COL_DATE_ACCESSED = 16
 """
 class Citation:
     def __init__(self, worksheet):
-        self.sheet = worksheet            #the excel sheet  
+        self.sheet = worksheet       #the excel sheet  
         self.numAuthors = 0          #number of authors add et al. if more than 2
         self.authors = ""            #list of authors in string format
         self.title = ""              #title of article
@@ -118,36 +118,12 @@ class Citation:
 
         #check that the title column wasn't empty
         if uncapitalizedTitle != None:
-            #set up list to hold individual words
-            individualWords = uncapitalizedTitle.split(" ")
             #add the opening quote to the title
-            self.title += "\""
-            #capitalize words, loop for each word
-            for i in range(0, len(individualWords)):
-                #always capitalize first word
-                if i == 0:
-                    individualWords[i] = individualWords[i].capitalize()
-                else:
-                    #set flag for whether the word should be capitalize
-                    wordShouldCapitalize = True
-                    #loop for list of words that shouldn't be capitalized and check if the word matches any of them
-                    for j in range(0, len(dontCapitalize)):
-                        if individualWords[i] == dontCapitalize[j]:
-                            wordShouldCapitalize = False
-                        
-                    if wordShouldCapitalize:
-                        individualWords[i] = individualWords[i].capitalize()
-
-                
-                #add the words to the title
-                self.title += individualWords[i]
-                #add spaces
-                if i < len(individualWords) - 1:
-                    self.title += " "
-                #add period and ending quote at the end
-                else:
-                    self.title += ".\""
-        
+            self.title = "\""
+            #capitalize the title and store it in the variable
+            self.title += capitalizeTitle(uncapitalizedTitle)
+            #add the period and closing quote
+            self.title += ".\""
             
             
     
@@ -256,8 +232,46 @@ def convertNumToMonth(num):
     else:
         return "???"
 
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to return a capitalized string according to title conventions
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def capitalizeTitle(uncapitalizedString):
 
+    capitalizedTitle = ""
     
+    #list of words that shouldn't be capitalized including articles, prepositions, and coordinate conjunctives
+    dontCapitalize = ["the", "a", "an", "with", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "along", "for", "from", "of", "on", "to", "with", "without"]
+
+    #set up list to hold individual words
+    individualWords = uncapitalizedString.split(" ")
+    
+    #capitalize words, loop for each word
+    for i in range(0, len(individualWords)):
+        #always capitalize first word
+        if i == 0:
+            individualWords[i] = individualWords[i].capitalize()
+        else:
+            #set flag for whether the word should be capitalize
+            wordShouldCapitalize = True
+            
+            #loop for list of words that shouldn't be capitalized and check if the word matches any of them
+            for j in range(0, len(dontCapitalize)):
+                if individualWords[i] == dontCapitalize[j]:
+                    wordShouldCapitalize = False
+                
+            if wordShouldCapitalize:
+                individualWords[i] = individualWords[i].capitalize()
+
+        
+        #add the words to the title
+        capitalizedTitle += individualWords[i]
+        #add spaces in between the words
+        if i < len(individualWords) - 1:
+            capitalizedTitle += " "
+
+    return capitalizedTitle
 
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -341,8 +355,8 @@ if excelFileOpened and citationFileOpened:
     run = paragraph.add_run("Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text ")
     formatRun(run)
 
-
-    for x in range(2, 11):
+    #testing
+    for x in range(ROW_DATA_STARTS, 11):
         
         citation = Citation(worksheet)
         citation.readAuthors(x)
