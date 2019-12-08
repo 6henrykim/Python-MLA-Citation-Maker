@@ -71,27 +71,27 @@ class Citation:
 
         #get data from each column
         author1LastName = sheet.cell(row, COL_AUTH1_LAST_NAME).value
-        author1FirstName = sheet.cell(row, COL_AUTH1_FIRST_NAME).value
-        author1FullName = str(author1LastName)
+        author1FullName = str(author1LastName).capitalize()
         #if the first name column is filled add it to full name
+        author1FirstName = sheet.cell(row, COL_AUTH1_FIRST_NAME).value
         if author1FirstName != None:         
-            author1FullName += ", " + str(author1FirstName)
-        #if the middle initial column is filled add it to full name
-        author1MiddleName = sheet.cell(row, COL_AUTH1_MIDDLE_NAME).value
-        if author1MiddleName != None:
-            author1FullName += " " + str(author1MiddleName)
+            author1FullName += ", " + str(author1FirstName).capitalize()
+            #if the middle name column is filled add it to full name
+            author1MiddleName = sheet.cell(row, COL_AUTH1_MIDDLE_NAME).value
+            if author1MiddleName != None:
+                author1FullName += " " + str(author1MiddleName).capitalize()
 
         #get data from each column
-        author2LastName = sheet.cell(row, COL_AUTH2_LAST_NAME).value
         author2FirstName = sheet.cell(row, COL_AUTH2_FIRST_NAME).value
-        author2FullName = str(author2FirstName) 
-        #if the middle initial column is filled add it to full name
+        author2FullName = str(author2FirstName).capitalize()
+        #if the middle name column is filled add it to full name
         author2MiddleName = sheet.cell(row, COL_AUTH2_MIDDLE_NAME).value
         if author2MiddleName != None:
-            author2FullName += " " + str(author2MiddleName)
-        #if the first name column is filled add it to full name
-        if author2FirstName != None:
-            author2FullName += " " + str(author2LastName) 
+            author2FullName += " " + str(author2MiddleName).capitalize()
+        #if the last name column is filled add it to full name
+        author2LastName = sheet.cell(row, COL_AUTH2_LAST_NAME).value
+        if author2LastName != None:
+            author2FullName += " " + str(author2LastName).capitalize()
 
         #assemble final string according to number of authors
         if self.numAuthors == None or self.numAuthors == 0:
@@ -114,6 +114,9 @@ class Citation:
         #if date is in datetime format convert into a string
         if(type(date) == datetime.datetime):
             self.datePublished = str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        #make sure date column isn't empty
+        elif date == None:
+            self.datePublished = ""
         #otherwise store it as a string
         else:
             self.datePublished = str(date)
@@ -125,6 +128,9 @@ class Citation:
         #if date is in datetime format convert into a string
         if(type(date) == datetime.datetime):
             self.dateAccessed = "Accessed " + str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        #make sure date column isn't empty
+        elif date == None:
+            self.datePublished = ""
         #otherwise store it as a string
         else:
             self.dateAcessed = "Accessed " + str(date)
@@ -293,13 +299,17 @@ if excelFileOpened and citationFileOpened:
     formatRun(run)
 
 
-    citation = Citation()
     for x in range(2, 11):
+        
+        citation = Citation()
         citation.readAuthors(x)
         print(citation.authors)
-    
+        citation.readDatePublished(x)
+        print(citation.datePublished)
+        citation.readDateAccessed(x)
+        print(citation.dateAccessed)
+        print("")
 
-    print(str(None))
 
 
     #Save the file
