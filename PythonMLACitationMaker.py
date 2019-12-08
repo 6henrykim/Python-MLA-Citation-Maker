@@ -106,7 +106,49 @@ class Citation:
             #more than 2 authors format: LastName1, FirstName1 MiddleName1, et al.
             self.authors = author1FullName + ", et al."
 
+    #Read from Excel and store title
+    def readTitle(self, row):
 
+        #list of words that shouldn't be capitalized
+        dontCapitalize = ["the", "a", "an", "with", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "along", "for", "from", "of", "on", "to", "with", "without"]
+
+        #read the data
+        uncapitalizedTitle = sheet.cell(row, COL_TITLE).value
+
+        #check that the title column wasn't empty
+        if uncapitalizedTitle != None:
+            #set up list to hold individual words
+            individualWords = uncapitalizedTitle.split(" ")
+            #add the opening quote to the title
+            self.title += "\""
+            #capitalize words, loop for each word
+            for i in range(0, len(individualWords)):
+                #always capitalize first word
+                if i == 0:
+                    individualWords[i] = individualWords[i].capitalize()
+                else:
+                    #set flag for whether the word should be capitalize
+                    wordShouldCapitalize = True
+                    #loop for list of words that shouldn't be capitalized and check if the word matches any of them
+                    for j in range(0, len(dontCapitalize)):
+                        if individualWords[i] == dontCapitalize[j]:
+                            wordShouldCapitalize = False
+                        
+                    if wordShouldCapitalize:
+                        individualWords[i] = individualWords[i].capitalize()
+
+                
+                #add the words to the title
+                self.title += individualWords[i]
+                #add spaces
+                if i < len(individualWords) - 1:
+                    self.title += " "
+                #add period and ending quote at the end
+                else:
+                    self.title += ".\""
+        
+            
+            
     
     #Read from Excel and store date for publishing
     def readDatePublished(self, row):
@@ -304,6 +346,8 @@ if excelFileOpened and citationFileOpened:
         citation = Citation()
         citation.readAuthors(x)
         print(citation.authors)
+        citation.readTitle(x)
+        print(citation.title)
         citation.readDatePublished(x)
         print(citation.datePublished)
         citation.readDateAccessed(x)
