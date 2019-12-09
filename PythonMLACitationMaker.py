@@ -164,31 +164,31 @@ class Citation:
     
     #Read from Excel and store published date
     def readDatePublished(self, row):
-        date = self.sheet.cell(row, COL_DATE_PUBLISHED).value
+        datePublishedCell = self.sheet.cell(row, COL_DATE_PUBLISHED).value
         #if date is in datetime format convert into a string
-        if(type(date) == datetime.datetime):
-            self.datePublished = str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        if(type(datePublishedCell) == datetime.datetime):
+            self.datePublished = str(datePublishedCell.day) + " " + convertNumToMonth(datePublishedCell.month) + " " + str(datePublishedCell.year)
         #make sure date column isn't empty
-        elif date == None:
+        elif datePublishedCell == None:
             self.datePublished = ""
         #otherwise store it as a string
         else:
-            self.datePublished = str(date)
+            self.datePublished = str(datePublishedCell)
 
     #TODO read location
             
     #Read from Excel and store accessed date
     def readDateAccessed(self, row):
-        date = self.sheet.cell(row, COL_DATE_ACCESSED).value
+        dateAccessedCell = self.sheet.cell(row, COL_DATE_ACCESSED).value
         #if date is in datetime format convert into a string
-        if(type(date) == datetime.datetime):
-            self.dateAccessed = "Accessed " + str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        if(type(dateAccessedCell) == datetime.datetime):
+            self.dateAccessed = "Accessed " + str(dateAccessedCell.day) + " " + convertNumToMonth(dateAccessedCell.month) + " " + str(dateAccessedCell.year)
         #make sure date column isn't empty
-        elif date == None:
-            self.datePublished = ""
+        elif dateAccessedCell == None:
+            self.dateAccessed = ""
         #otherwise store it as a string
         else:
-            self.dateAcessed = "Accessed " + str(date)
+            self.dateAcessed = "Accessed " + str(dateAccessedCell)
     
 
 
