@@ -288,9 +288,24 @@ def capitalizeTitle(uncapitalizedString):
 
     return capitalizedTitle
 
+
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
-    Function format heading and citation runs to be Times New Roman and point 12
+    Function to format citation paragraphs to be double space and hanging indent
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def formatParagraph(paragraph):
+    paragraphFormatting = paragraph.paragraph_format
+    paragraphFormatting.line_spacing_rule = 2   #set double spaceing
+    paragraphFormatting.keep_together = True    #keeps citation on same page
+    paragraphFormatting.left_indent = Inches(0.5)   #indent citations
+    paragraphFormatting.first_line_indent = Inches(-0.5)    #negative to make fist line hanging indent
+    
+
+
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to format heading and citation runs to be Times New Roman and point 12
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 def formatRun(run):
@@ -360,32 +375,52 @@ if excelFileOpened and citationFileOpened:
     headingRun = heading.add_run("Works Cited")
     formatRun(headingRun)
 
-    #Citation Formatting
-    paragraph = document.add_paragraph()
-    paragraphFormatting = paragraph.paragraph_format
-    paragraphFormatting.line_spacing_rule = 2   #set double spaceing
-    paragraphFormatting.keep_together = True    #keeps citation on same page
-    paragraphFormatting.left_indent = Inches(0.5)   #indent citations
-    paragraphFormatting.first_line_indent = Inches(-0.5)    #negative to make fist line hanging indent
-    run = paragraph.add_run("Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text ")
-    formatRun(run)
-
-    #testing
+    #list to hold each citation object
+    citationList = []
+    #loop to read from sheet
+    #TODO: change to depend on authors, title, and container being filled
     for x in range(ROW_DATA_STARTS, 11):
         
         citation = Citation(worksheet)
         citation.readAuthors(x)
-        print(citation.authors)
         citation.readTitle(x)
-        print(citation.title)
         citation.readContainer(x)
-        print(citation.container)
         citation.readDatePublished(x)
-        print(citation.datePublished)
         citation.readDateAccessed(x)
-        print(citation.dateAccessed)
-        print("")
+        citationList.append(citation)
 
+    #TODO sort the citations by alphabetical
+    
+    #Loop through each citation and write to document
+    for citation in citationList:
+        #tracks everything that was written to document
+        stringWritten = ""
+        citationParagraph = document.add_paragraph()
+        formatParagraph(citationParagraph)
+
+        if citation.authors != "":
+            citationRun = citationParagraph.add_run(citation.authors)
+            stringWritten += citation.authors
+            formatRun(citationRun)
+
+        if citation.title != "":
+            citationRun = citationParagraph.add_run(" " + citation.title)
+            stringWritten += " " + citation.title
+            formatRun(citationRun)
+
+        if citation.container != "":
+            citationRun = citationParagraph.add_run(" " + citation.container)
+            stringWritten += " " + citation.container
+            formatRun(citationRun)
+            citationRun.font.italic = True
+
+
+        if (stringWritten.endswith(".") == False):
+            citationRun = citationParagraph.add_run(".")
+            stringWritten += "."
+            formatRun(citationRun)
+
+        print(stringWritten)
 
 
     #Save the file
