@@ -62,10 +62,10 @@ class Citation:
         self.container = ""          #title of collection or website, in italics
         self.contributors = ""       #editors or translators, Edited by ...
         self.version = ""            #edition or version
-        self.number = 0              #number or vol
+        self.number = ""             #number or vol, could be episode number
         self.publisher = ""          #publisher
-        self.location = ""           #page numbers or url, no https://
         self.datePublished = ""      #date published or updated 
+        self.location = ""           #page numbers or url, no https://
         self.dateAccessed = ""       #date website accessed
 
     #Read from Excel and store authors 
@@ -158,8 +158,25 @@ class Citation:
             #set the version variable to the cell value
             self.version = versionCell
     
-    #TODO read number
-    #TODO read publisher
+    #Read from Excel and store number
+    def readNumber(self, row):
+        #read the data
+        numberCell = self.sheet.cell(row, COL_NUMBER).value
+
+        #check that the number column wasn't empty
+        if numberCell != None:
+            #set the contributors variable to the cell value
+            self.number = str(numberCell)
+            
+    #Read from Excel and store publisher
+    def readPublisher(self, row):
+        #read the data
+        publisherCell = self.sheet.cell(row, COL_PUBLISHER).value
+
+        #check that the publisher column wasn't empty
+        if publisherCell != None:
+            #set the publisher variable to the cell value
+            self.publisher = str(publisherCell)
                   
     
     #Read from Excel and store published date
@@ -175,7 +192,22 @@ class Citation:
         else:
             self.datePublished = str(datePublishedCell)
 
-    #TODO read location
+
+    #Read from Excel and store location
+    def readLocation(self, row):
+        #read the data
+        locationCell = self.sheet.cell(row, COL_LOCATION).value
+
+        #check that the version column wasn't empty
+        if locationCell != None:
+            #if url has http:// or https://, only store the part after it
+            if locationCell.startswith("http://") or locationCell.startswith("https://"):
+                urlSplit = locationCell.split("//")
+                self.location = urlSplit[1]
+            #otherwise store the text as is
+            else:
+                self.location = locationCell
+
             
     #Read from Excel and store accessed date
     def readDateAccessed(self, row):
@@ -414,31 +446,37 @@ if excelFileOpened and citationFileOpened:
 
     #list to hold each citation object
     citationList = []
-    #loop to read from sheet
-    #TODO: change to depend on authors, title, and container being filled
-    for x in range(ROW_DATA_STARTS, 13):
-        
+    
+    #loop to read from sheet as long as the first author's last name, title, or container is filled
+    index = ROW_DATA_STARTS 
+    while (worksheet.cell(index, COL_AUTH1_LAST_NAME).value != None) or (worksheet.cell(index, COL_TITLE).value != None) or (worksheet.cell(index, COL_CONTAINER).value != None):
         citation = Citation(worksheet)
-        citation.readAuthors(x)
-        citation.readTitle(x)
-        citation.readContainer(x)
-        citation.readContributors(x)
-        citation.readVersion(x)
-        citation.readDatePublished(x)
-        citation.readDateAccessed(x)
+        citation.readAuthors(index)
+        citation.readTitle(index)
+        citation.readContainer(index)
+        citation.readContributors(index)
+        citation.readVersion(index)
+        citation.readNumber(index)
+        citation.readPublisher(index)
+        citation.readDatePublished(index)
+        citation.readLocation(index)
+        citation.readDateAccessed(index)
         citationList.append(citation)
+        index += 1
 
-    #TODO sort the citations by alphabetical
+    #TODO sort the citations by alphabetical order
     
     #Loop through each citation and write to document
     for citation in citationList:
         #tracks everything that was written to document
         stringWritten = ""
+        #flag for whether the next segment should have a comma before it
         needComma = False
         #add the paragraph for each citation
         citationParagraph = document.add_paragraph()
         formatParagraph(citationParagraph)
 
+        #Check if there's content for each segment and add it as a run if there is
         if citation.authors != "":
             citationRun = citationParagraph.add_run(citation.authors)
             formatRun(citationRun)
@@ -471,8 +509,20 @@ if excelFileOpened and citationFileOpened:
             formatRun(citationRun)
             stringWritten += transition + citation.version
             needComma = True
-    #TODO write number
-    #TODO write publisher
+
+        if citation.number != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.number)
+            formatRun(citationRun)
+            stringWritten += transition + citation.number
+            needComma = True
+
+        if citation.publisher != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.publisher)
+            formatRun(citationRun)
+            stringWritten += transition + citation.publisher
+            needComma = True
     
 
         if citation.datePublished != "":
@@ -482,7 +532,12 @@ if excelFileOpened and citationFileOpened:
             stringWritten += transition + citation.datePublished
             needComma = True
         
-    #TODO write location
+        if citation.location != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.location)
+            formatRun(citationRun)
+            stringWritten += transition + citation.location
+            needComma = True
             
         if citation.dateAccessed != "":
             transition = determineTransition(stringWritten, needComma)
@@ -491,6 +546,7 @@ if excelFileOpened and citationFileOpened:
             stringWritten += transition + citation.dateAccessed
             needComma = True
 
+        #Add a period to the end if there isn't one already
         if (stringWritten.endswith(".") == False):
             citationRun = citationParagraph.add_run(".")
             formatRun(citationRun)
@@ -498,6 +554,10 @@ if excelFileOpened and citationFileOpened:
             
 
         print(stringWritten)
+        
+    print("Citation page complete. Warning: Acryonyms may not be capitalized correctly")
+
+  
 
 
     #Save the file
