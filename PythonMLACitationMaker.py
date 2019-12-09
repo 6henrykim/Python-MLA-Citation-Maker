@@ -67,6 +67,7 @@ class Citation:
         self.datePublished = ""      #date published or updated 
         self.location = ""           #page numbers or url, no https://
         self.dateAccessed = ""       #date website accessed
+        self.sortKey = ""            #Author, title, and container used to sort citations
 
     #Read from Excel and store authors 
     def readAuthors(self, row):
@@ -176,7 +177,7 @@ class Citation:
         #check that the publisher column wasn't empty
         if publisherCell != None:
             #set the publisher variable to the cell value
-            self.publisher = str(publisherCell)
+            self.publisher = capitalizeTitle(publisherCell)
                   
     
     #Read from Excel and store published date
@@ -223,7 +224,11 @@ class Citation:
             self.dateAcessed = "Accessed " + str(dateAccessedCell)
     
 
-
+    #Create the sorting key based on data read
+    def createSortKey(self):
+        self.sortKey += self.authors + " " + self.title + " " + self.container
+        self.sortKey = self.sortKey.lower()
+        
 
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -383,6 +388,37 @@ def determineTransition(stringToCheck, needComma):
         return ", "
     else:
         return " "
+
+
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to sort the list of citations by alphabetical order using bubble sort
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def sortCitations(citationList):
+    print("todo")
+    
+    maxElement = len(citationList) - 1
+    while maxElement > 0:
+        
+        index = 0
+        while index < maxElement:
+
+            #check if the first element comes after the second one and swap if it does
+            if citationList[index].sortKey > citationList[index + 1].sortKey:
+                #swap the elements
+                temp = citationList[index]
+                citationList[index] = citationList[index + 1]
+                citationList[index + 1] = temp
+
+
+            index += 1
+
+
+            
+        maxElement -=1
+    
+
     
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -461,10 +497,12 @@ if excelFileOpened and citationFileOpened:
         citation.readDatePublished(index)
         citation.readLocation(index)
         citation.readDateAccessed(index)
+        citation.createSortKey()
         citationList.append(citation)
         index += 1
 
-    #TODO sort the citations by alphabetical order
+    #Sort the citations by alphabetical order
+    sortCitations(citationList)
     
     #Loop through each citation and write to document
     for citation in citationList:
@@ -557,7 +595,7 @@ if excelFileOpened and citationFileOpened:
         
     print("Citation page complete. Warning: Acryonyms may not be capitalized correctly")
 
-  
+
 
 
     #Save the file
