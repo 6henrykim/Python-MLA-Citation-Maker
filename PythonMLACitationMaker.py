@@ -1,6 +1,10 @@
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
     Creates a Word Doc with citations from an Excel spreadsheet specified by the user
+    
+    Author. "Title of source." italics(Title of container), Other contributors,
+        Version, Number, Publisher, Publication date, Location.
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 
@@ -54,13 +58,13 @@ class Citation:
         self.sheet = worksheet       #the excel sheet  
         self.numAuthors = 0          #number of authors add et al. if more than 2
         self.authors = ""            #list of authors in string format
-        self.title = ""              #title of article
-        self.container = ""          #title of collection or website
-        self.contributors = ""       #editors etc
+        self.title = ""              #title of article, "Title."
+        self.container = ""          #title of collection or website, in italics
+        self.contributors = ""       #editors or translators, Edited by ...
         self.version = ""            #edition or version
         self.number = 0              #number or vol
         self.publisher = ""          #publisher
-        self.location = ""           #page numbers or url
+        self.location = ""           #page numbers or url, no https://
         self.datePublished = ""      #date published or updated 
         self.dateAccessed = ""       #date website accessed
 
@@ -82,9 +86,10 @@ class Citation:
             if author1MiddleName != None:
                 author1FullName += " " + str(author1MiddleName).capitalize()
 
-        #get data from each column
+        #if the first name column is filled add it to full name
         author2FirstName = self.sheet.cell(row, COL_AUTH2_FIRST_NAME).value
-        author2FullName = str(author2FirstName).capitalize()
+        if author2FirstName != None:    
+            author2FullName = str(author2FirstName).capitalize()
         #if the middle name column is filled add it to full name
         author2MiddleName = self.sheet.cell(row, COL_AUTH2_MIDDLE_NAME).value
         if author2MiddleName != None:
@@ -109,10 +114,7 @@ class Citation:
 
     #Read from Excel and store title
     def readTitle(self, row):
-
-        #list of words that shouldn't be capitalized including articles, prepositions, and coordinate conjunctives
-        dontCapitalize = ["the", "a", "an", "with", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "along", "for", "from", "of", "on", "to", "with", "without"]
-
+        
         #read the data
         uncapitalizedTitle = self.sheet.cell(row, COL_TITLE).value
 
@@ -125,9 +127,20 @@ class Citation:
             #add the period and closing quote
             self.title += ".\""
             
+    #Read from Excel and store container name
+    def readContainer(self, row):
+        
+        #read the data
+        uncapitalizedContainer = self.sheet.cell(row, COL_CONTAINER).value
+
+        #check that the title column wasn't empty
+        if uncapitalizedContainer != None:
+            #add the opening quote to the title
+            self.container = capitalizeTitle(uncapitalizedContainer)
             
+                  
     
-    #Read from Excel and store date for publishing
+    #Read from Excel and store published date
     def readDatePublished(self, row):
         date = self.sheet.cell(row, COL_DATE_PUBLISHED).value
         #if date is in datetime format convert into a string
@@ -177,6 +190,7 @@ def inputExcelFileName():
     return fileName
 
 
+
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
     Function to get the name of the output file from the user
@@ -197,6 +211,7 @@ def inputCitationFileName():
 
     #return the name of the file
     return fileName
+
 
 
 """
@@ -363,6 +378,8 @@ if excelFileOpened and citationFileOpened:
         print(citation.authors)
         citation.readTitle(x)
         print(citation.title)
+        citation.readContainer(x)
+        print(citation.container)
         citation.readDatePublished(x)
         print(citation.datePublished)
         citation.readDateAccessed(x)
