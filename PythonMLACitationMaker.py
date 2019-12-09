@@ -1,6 +1,10 @@
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
     Creates a Word Doc with citations from an Excel spreadsheet specified by the user
+    
+    Author. "Title of source." italics(Title of container), Other contributors,
+        Version, Number, Publisher, Publication date, Location.
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 
@@ -51,18 +55,19 @@ COL_DATE_ACCESSED = 16
 """
 class Citation:
     def __init__(self, worksheet):
-        self.sheet = worksheet            #the excel sheet  
+        self.sheet = worksheet       #the excel sheet  
         self.numAuthors = 0          #number of authors add et al. if more than 2
         self.authors = ""            #list of authors in string format
         self.title = ""              #title of article
-        self.container = ""          #title of collection or website
-        self.contributors = ""       #editors etc
+        self.container = ""          #title of collection or website, in italics
+        self.contributors = ""       #editors or translators, Edited by ...
         self.version = ""            #edition or version
-        self.number = 0              #number or vol
+        self.number = ""             #number or vol, could be episode number
         self.publisher = ""          #publisher
-        self.location = ""           #page numbers or url
         self.datePublished = ""      #date published or updated 
+        self.location = ""           #page numbers or url, no https://
         self.dateAccessed = ""       #date website accessed
+        self.sortKey = ""            #Author, title, and container used to sort citations
 
     #Read from Excel and store authors 
     def readAuthors(self, row):
@@ -82,9 +87,10 @@ class Citation:
             if author1MiddleName != None:
                 author1FullName += " " + str(author1MiddleName).capitalize()
 
-        #get data from each column
+        #if the first name column is filled add it to full name
         author2FirstName = self.sheet.cell(row, COL_AUTH2_FIRST_NAME).value
-        author2FullName = str(author2FirstName).capitalize()
+        if author2FirstName != None:    
+            author2FullName = str(author2FirstName).capitalize()
         #if the middle name column is filled add it to full name
         author2MiddleName = self.sheet.cell(row, COL_AUTH2_MIDDLE_NAME).value
         if author2MiddleName != None:
@@ -109,77 +115,120 @@ class Citation:
 
     #Read from Excel and store title
     def readTitle(self, row):
-
-        #list of words that shouldn't be capitalized including articles, prepositions, and coordinate conjunctives
-        dontCapitalize = ["the", "a", "an", "with", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "along", "for", "from", "of", "on", "to", "with", "without"]
-
+        
         #read the data
         uncapitalizedTitle = self.sheet.cell(row, COL_TITLE).value
 
         #check that the title column wasn't empty
         if uncapitalizedTitle != None:
-            #set up list to hold individual words
-            individualWords = uncapitalizedTitle.split(" ")
-            #add the opening quote to the title
-            self.title += "\""
-            #capitalize words, loop for each word
-            for i in range(0, len(individualWords)):
-                #always capitalize first word
-                if i == 0:
-                    individualWords[i] = individualWords[i].capitalize()
-                else:
-                    #set flag for whether the word should be capitalize
-                    wordShouldCapitalize = True
-                    #loop for list of words that shouldn't be capitalized and check if the word matches any of them
-                    for j in range(0, len(dontCapitalize)):
-                        if individualWords[i] == dontCapitalize[j]:
-                            wordShouldCapitalize = False
-                        
-                    if wordShouldCapitalize:
-                        individualWords[i] = individualWords[i].capitalize()
-
-                
-                #add the words to the title
-                self.title += individualWords[i]
-                #add spaces
-                if i < len(individualWords) - 1:
-                    self.title += " "
-                #add period and ending quote at the end
-                else:
-                    self.title += ".\""
+            #add the opening quote
+            self.title = "\""
+            #capitalize the title and store it in the variable
+            self.title += capitalizeTitle(uncapitalizedTitle)
+            #add the closing quote
+            self.title += ".\""
+           
+    #Read from Excel and store container name
+    def readContainer(self, row):
         
-            
-            
+        #read the data
+        uncapitalizedContainer = self.sheet.cell(row, COL_CONTAINER).value
+
+        #check that the container column wasn't empty
+        if uncapitalizedContainer != None:
+            #set the container variable to the capitalized version
+            self.container = capitalizeTitle(uncapitalizedContainer)
+
+    #Read from Excel and store contributors
+    def readContributors(self, row):
+        #read the data
+        contributorsCell = self.sheet.cell(row, COL_CONTRIBUTORS).value
+
+        #check that the contributors column wasn't empty
+        if contributorsCell != None:
+            #set the contributors variable to the cell value
+            self.contributors = contributorsCell
+
+    #Read from Excel and store version
+    def readVersion(self, row):
+        #read the data
+        versionCell = self.sheet.cell(row, COL_VERSION).value
+
+        #check that the version column wasn't empty
+        if versionCell != None:
+            #set the version variable to the cell value
+            self.version = versionCell
     
-    #Read from Excel and store date for publishing
+    #Read from Excel and store number
+    def readNumber(self, row):
+        #read the data
+        numberCell = self.sheet.cell(row, COL_NUMBER).value
+
+        #check that the number column wasn't empty
+        if numberCell != None:
+            #set the contributors variable to the cell value
+            self.number = str(numberCell)
+            
+    #Read from Excel and store publisher
+    def readPublisher(self, row):
+        #read the data
+        publisherCell = self.sheet.cell(row, COL_PUBLISHER).value
+
+        #check that the publisher column wasn't empty
+        if publisherCell != None:
+            #set the publisher variable to the cell value
+            self.publisher = capitalizeTitle(publisherCell)
+                  
+    
+    #Read from Excel and store published date
     def readDatePublished(self, row):
-        date = self.sheet.cell(row, COL_DATE_PUBLISHED).value
+        datePublishedCell = self.sheet.cell(row, COL_DATE_PUBLISHED).value
         #if date is in datetime format convert into a string
-        if(type(date) == datetime.datetime):
-            self.datePublished = str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        if(type(datePublishedCell) == datetime.datetime):
+            self.datePublished = str(datePublishedCell.day) + " " + convertNumToMonth(datePublishedCell.month) + " " + str(datePublishedCell.year)
         #make sure date column isn't empty
-        elif date == None:
+        elif datePublishedCell == None:
             self.datePublished = ""
         #otherwise store it as a string
         else:
-            self.datePublished = str(date)
+            self.datePublished = str(datePublishedCell)
 
-    
+
+    #Read from Excel and store location
+    def readLocation(self, row):
+        #read the data
+        locationCell = self.sheet.cell(row, COL_LOCATION).value
+
+        #check that the version column wasn't empty
+        if locationCell != None:
+            #if url has http:// or https://, only store the part after it
+            if locationCell.startswith("http://") or locationCell.startswith("https://"):
+                urlSplit = locationCell.split("//")
+                self.location = urlSplit[1]
+            #otherwise store the text as is
+            else:
+                self.location = locationCell
+
+            
     #Read from Excel and store accessed date
     def readDateAccessed(self, row):
-        date = self.sheet.cell(row, COL_DATE_ACCESSED).value
+        dateAccessedCell = self.sheet.cell(row, COL_DATE_ACCESSED).value
         #if date is in datetime format convert into a string
-        if(type(date) == datetime.datetime):
-            self.dateAccessed = "Accessed " + str(date.day) + " " + convertNumToMonth(date.month) + " " + str(date.year)
+        if(type(dateAccessedCell) == datetime.datetime):
+            self.dateAccessed = "Accessed " + str(dateAccessedCell.day) + " " + convertNumToMonth(dateAccessedCell.month) + " " + str(dateAccessedCell.year)
         #make sure date column isn't empty
-        elif date == None:
-            self.datePublished = ""
+        elif dateAccessedCell == None:
+            self.dateAccessed = ""
         #otherwise store it as a string
         else:
-            self.dateAcessed = "Accessed " + str(date)
+            self.dateAcessed = "Accessed " + str(dateAccessedCell)
     
 
-
+    #Create the sorting key based on data read
+    def createSortKey(self):
+        self.sortKey += self.authors + " " + self.title + " " + self.container
+        self.sortKey = self.sortKey.lower()
+        
 
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -199,6 +248,7 @@ def inputExcelFileName():
 
     #return the name of the file
     return fileName
+
 
 
 """
@@ -223,6 +273,7 @@ def inputCitationFileName():
     return fileName
 
 
+
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
     Function to return a month string based on number
@@ -230,47 +281,145 @@ def inputCitationFileName():
 """
 def convertNumToMonth(num):
     if num == 1:
-        return "Jan"
+        return "Jan."
     elif num == 2:
-        return "Feb"
+        return "Feb."
     elif num == 3:
-        return "Mar"
+        return "Mar."
     elif num == 4:
-        return "Apr"
+        return "Apr."
     elif num == 5:
         return "May"
     elif num == 6:
-        return "Jun"
+        return "Jun."
     elif num == 7:
-        return "Jul"
+        return "Jul."
     elif num == 8:
-        return "Aug"
+        return "Aug."
     elif num == 9:
-        return "Sep"
+        return "Sep."
     elif num == 10:
-        return "Oct"
+        return "Oct."
     elif num == 11:
-        return "Nov"
+        return "Nov."
     elif num == 12:
-        return "Dec"
+        return "Dec."
     else:
         return "???"
 
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to return a capitalized string according to title conventions
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def capitalizeTitle(uncapitalizedString):
 
+    capitalizedTitle = ""
     
+    #list of words that shouldn't be capitalized including articles, prepositions, and coordinate conjunctives
+    dontCapitalize = ["the", "a", "an", "with", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "along", "for", "from", "of", "on", "to", "with", "without"]
+
+    #set up list to hold individual words
+    individualWords = uncapitalizedString.split(" ")
+    
+    #capitalize words, loop for each word
+    for i in range(0, len(individualWords)):
+        #always capitalize first word
+        if i == 0:
+            individualWords[i] = individualWords[i].capitalize()
+        else:
+            #set flag for whether the word should be capitalize
+            wordShouldCapitalize = True
+            
+            #loop for list of words that shouldn't be capitalized and check if the word matches any of them
+            for j in range(0, len(dontCapitalize)):
+                if individualWords[i] == dontCapitalize[j]:
+                    wordShouldCapitalize = False
+                
+            if wordShouldCapitalize:
+                individualWords[i] = individualWords[i].capitalize()
+
+        
+        #add the words to the title
+        capitalizedTitle += individualWords[i]
+        #add spaces in between the words
+        if i < len(individualWords) - 1:
+            capitalizedTitle += " "
+
+    return capitalizedTitle
+
 
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
-    Function format heading and citation runs to be Times New Roman and point 12
+    Function to format citation paragraphs to be double space and hanging indent
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def formatParagraph(paragraph):
+    paragraphFormatting = paragraph.paragraph_format
+    paragraphFormatting.line_spacing_rule = 2   #set double spaceing
+    paragraphFormatting.keep_together = True    #keeps citation on same page
+    paragraphFormatting.left_indent = Inches(0.5)   #indent citations
+    paragraphFormatting.first_line_indent = Inches(-0.5)    #negative to make fist line hanging indent
+    
+
+
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to format heading and citation runs to be Times New Roman and point 12
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 def formatRun(run):
     font = run.font
     font.name = "Times New Roman"
     font.size = Pt(12)
+
+    
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to determine what should go before the next string in an MLA citation
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def determineTransition(stringToCheck, needComma):
+    #if stringToCheck will be the first thing written, nothing goes before it
+    if stringToCheck == "":
+        return ""
+    #elif stringToCheck doesnt end with the authors or title, a comma goes before it 
+    elif needComma:
+        return ", "
+    else:
+        return " "
+
+
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to sort the list of citations by alphabetical order using bubble sort
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def sortCitations(citationList):
+    print("todo")
+    
+    maxElement = len(citationList) - 1
+    while maxElement > 0:
+        
+        index = 0
+        while index < maxElement:
+
+            #check if the first element comes after the second one and swap if it does
+            if citationList[index].sortKey > citationList[index + 1].sortKey:
+                #swap the elements
+                temp = citationList[index]
+                citationList[index] = citationList[index + 1]
+                citationList[index + 1] = temp
+
+
+            index += 1
+
+
+            
+        maxElement -=1
     
 
-
+    
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
     Main function execution
@@ -331,32 +480,130 @@ if excelFileOpened and citationFileOpened:
     headingRun = heading.add_run("Works Cited")
     formatRun(headingRun)
 
-    #Citation Formatting
-    paragraph = document.add_paragraph()
-    paragraphFormatting = paragraph.paragraph_format
-    paragraphFormatting.line_spacing_rule = 2   #set double spaceing
-    paragraphFormatting.keep_together = True    #keeps citation on same page
-    paragraphFormatting.left_indent = Inches(0.5)   #indent citations
-    paragraphFormatting.first_line_indent = Inches(-0.5)    #negative to make fist line hanging indent
-    run = paragraph.add_run("Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text Lots of Text ")
-    formatRun(run)
-
-
-    for x in range(2, 11):
-        
+    #list to hold each citation object
+    citationList = []
+    
+    #loop to read from sheet as long as the first author's last name, title, or container is filled
+    index = ROW_DATA_STARTS 
+    while (worksheet.cell(index, COL_AUTH1_LAST_NAME).value != None) or (worksheet.cell(index, COL_TITLE).value != None) or (worksheet.cell(index, COL_CONTAINER).value != None):
         citation = Citation(worksheet)
-        citation.readAuthors(x)
-        print(citation.authors)
-        citation.readTitle(x)
-        print(citation.title)
-        citation.readDatePublished(x)
-        print(citation.datePublished)
-        citation.readDateAccessed(x)
-        print(citation.dateAccessed)
-        print("")
+        citation.readAuthors(index)
+        citation.readTitle(index)
+        citation.readContainer(index)
+        citation.readContributors(index)
+        citation.readVersion(index)
+        citation.readNumber(index)
+        citation.readPublisher(index)
+        citation.readDatePublished(index)
+        citation.readLocation(index)
+        citation.readDateAccessed(index)
+        citation.createSortKey()
+        citationList.append(citation)
+        index += 1
+
+    #Sort the citations by alphabetical order
+    sortCitations(citationList)
+    
+    #Loop through each citation and write to document
+    for citation in citationList:
+        #tracks everything that was written to document
+        stringWritten = ""
+        #flag for whether the next segment should have a comma before it
+        needComma = False
+        #add the paragraph for each citation
+        citationParagraph = document.add_paragraph()
+        formatParagraph(citationParagraph)
+
+        #Check if there's content for each segment and add it as a run if there is
+        if citation.authors != "":
+            citationRun = citationParagraph.add_run(citation.authors)
+            formatRun(citationRun)
+            stringWritten += citation.authors
+            
+        if citation.title != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.title)
+            formatRun(citationRun)
+            stringWritten += transition + citation.title
+
+        if citation.container != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.container)
+            formatRun(citationRun)
+            citationRun.font.italic = True
+            stringWritten += transition + citation.container
+            needComma = True
+
+        if citation.contributors != "":
+            transition = determineTransition(stringWritten,needComma)
+            citationRun = citationParagraph.add_run(transition + citation.contributors)
+            formatRun(citationRun)
+            stringWritten += transition + citation.contributors
+            needComma = True
+            
+        if citation.version != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.version)
+            formatRun(citationRun)
+            stringWritten += transition + citation.version
+            needComma = True
+
+        if citation.number != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.number)
+            formatRun(citationRun)
+            stringWritten += transition + citation.number
+            needComma = True
+
+        if citation.publisher != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.publisher)
+            formatRun(citationRun)
+            stringWritten += transition + citation.publisher
+            needComma = True
+    
+
+        if citation.datePublished != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.datePublished)
+            formatRun(citationRun)
+            stringWritten += transition + citation.datePublished
+            needComma = True
+        
+        if citation.location != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.location)
+            formatRun(citationRun)
+            stringWritten += transition + citation.location
+            needComma = True
+            
+        if citation.dateAccessed != "":
+            transition = determineTransition(stringWritten, needComma)
+            citationRun = citationParagraph.add_run(transition + citation.dateAccessed)
+            formatRun(citationRun)
+            stringWritten += transition + citation.dateAccessed
+            needComma = True
+
+        #Add a period to the end if there isn't one already
+        if (stringWritten.endswith(".") == False):
+            citationRun = citationParagraph.add_run(".")
+            formatRun(citationRun)
+            stringWritten += "."
+            
+
+        print(stringWritten)
+        
+    print("Citation page complete. Warning: Acryonyms may not be capitalized correctly")
+
 
 
 
     #Save the file
     document.save(documentName)
+
+
+    
+
+
+
 
