@@ -58,7 +58,7 @@ class Citation:
         self.sheet = worksheet       #the excel sheet  
         self.numAuthors = 0          #number of authors add et al. if more than 2
         self.authors = ""            #list of authors in string format
-        self.title = ""              #title of article, "Title."
+        self.title = ""              #title of article
         self.container = ""          #title of collection or website, in italics
         self.contributors = ""       #editors or translators, Edited by ...
         self.version = ""            #edition or version
@@ -120,24 +120,46 @@ class Citation:
 
         #check that the title column wasn't empty
         if uncapitalizedTitle != None:
-            #add the opening quote to the title
+            #add the opening quote
             self.title = "\""
             #capitalize the title and store it in the variable
             self.title += capitalizeTitle(uncapitalizedTitle)
-            #add the period and closing quote
+            #add the closing quote
             self.title += ".\""
-            
+           
     #Read from Excel and store container name
     def readContainer(self, row):
         
         #read the data
         uncapitalizedContainer = self.sheet.cell(row, COL_CONTAINER).value
 
-        #check that the title column wasn't empty
+        #check that the container column wasn't empty
         if uncapitalizedContainer != None:
-            #add the opening quote to the title
+            #set the container variable to the capitalized version
             self.container = capitalizeTitle(uncapitalizedContainer)
-            
+
+    #Read from Excel and store contributors
+    def readContributors(self, row):
+        #read the data
+        contributorsCell = self.sheet.cell(row, COL_CONTRIBUTORS).value
+
+        #check that the contributors column wasn't empty
+        if contributorsCell != None:
+            #set the contributors variable to the cell value
+            self.contributors = contributorsCell
+
+    #Read from Excel and store version
+    def readVersion(self, row):
+        #read the data
+        versionCell = self.sheet.cell(row, COL_VERSION).value
+
+        #check that the version column wasn't empty
+        if versionCell != None:
+            #set the version variable to the cell value
+            self.version = versionCell
+    
+    #TODO read number
+    #TODO read publisher
                   
     
     #Read from Excel and store published date
@@ -153,7 +175,8 @@ class Citation:
         else:
             self.datePublished = str(date)
 
-    
+    #TODO read location
+            
     #Read from Excel and store accessed date
     def readDateAccessed(self, row):
         date = self.sheet.cell(row, COL_DATE_ACCESSED).value
@@ -221,29 +244,29 @@ def inputCitationFileName():
 """
 def convertNumToMonth(num):
     if num == 1:
-        return "Jan"
+        return "Jan."
     elif num == 2:
-        return "Feb"
+        return "Feb."
     elif num == 3:
-        return "Mar"
+        return "Mar."
     elif num == 4:
-        return "Apr"
+        return "Apr."
     elif num == 5:
         return "May"
     elif num == 6:
-        return "Jun"
+        return "Jun."
     elif num == 7:
-        return "Jul"
+        return "Jul."
     elif num == 8:
-        return "Aug"
+        return "Aug."
     elif num == 9:
-        return "Sep"
+        return "Sep."
     elif num == 10:
-        return "Oct"
+        return "Oct."
     elif num == 11:
-        return "Nov"
+        return "Nov."
     elif num == 12:
-        return "Dec"
+        return "Dec."
     else:
         return "???"
 
@@ -312,8 +335,23 @@ def formatRun(run):
     font = run.font
     font.name = "Times New Roman"
     font.size = Pt(12)
-    
 
+    
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------
+    Function to determine what should go before the next string in an MLA citation
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def determineTransition(stringToCheck):
+    #if stringToCheck will be the first thing written, nothing goes before it
+    if stringToCheck == "":
+        return ""
+    #elif stringToCheck ends with a period or quotes, a space should go before the next string
+    elif (stringToCheck.endswith(".") == True) or (stringToCheck.endswith("\"") == True):
+        return " "
+    #otherwise a comma and space should go before the next string
+    else:
+        return ", "
 
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -379,12 +417,14 @@ if excelFileOpened and citationFileOpened:
     citationList = []
     #loop to read from sheet
     #TODO: change to depend on authors, title, and container being filled
-    for x in range(ROW_DATA_STARTS, 11):
+    for x in range(ROW_DATA_STARTS, 13):
         
         citation = Citation(worksheet)
         citation.readAuthors(x)
         citation.readTitle(x)
         citation.readContainer(x)
+        citation.readContributors(x)
+        citation.readVersion(x)
         citation.readDatePublished(x)
         citation.readDateAccessed(x)
         citationList.append(citation)
@@ -395,34 +435,72 @@ if excelFileOpened and citationFileOpened:
     for citation in citationList:
         #tracks everything that was written to document
         stringWritten = ""
+        #add the paragraph for each citation
         citationParagraph = document.add_paragraph()
         formatParagraph(citationParagraph)
 
         if citation.authors != "":
             citationRun = citationParagraph.add_run(citation.authors)
+            formatRun(citationRun)
             stringWritten += citation.authors
-            formatRun(citationRun)
-
+            
         if citation.title != "":
-            citationRun = citationParagraph.add_run(" " + citation.title)
-            stringWritten += " " + citation.title
+            transition = determineTransition(stringWritten)
+            citationRun = citationParagraph.add_run(transition + citation.title)
             formatRun(citationRun)
+            stringWritten += transition + citation.title
 
         if citation.container != "":
-            citationRun = citationParagraph.add_run(" " + citation.container)
-            stringWritten += " " + citation.container
+            transition = determineTransition(stringWritten)
+            citationRun = citationParagraph.add_run(transition + citation.container)
             formatRun(citationRun)
             citationRun.font.italic = True
+            stringWritten += transition + citation.container
 
+        if citation.contributors != "":
+            transition = determineTransition(stringWritten)
+            citationRun = citationParagraph.add_run(transition + citation.contributors)
+            formatRun(citationRun)
+            stringWritten += transition + citation.contributors
+            
+        if citation.version != "":
+            transition = determineTransition(stringWritten)
+            citationRun = citationParagraph.add_run(transition + citation.version)
+            formatRun(citationRun)
+            stringWritten += transition + citation.version
+    #TODO write number
+    #TODO write publisher
+    
+
+        if citation.datePublished != "":
+            transition = determineTransition(stringWritten)
+            citationRun = citationParagraph.add_run(transition + citation.datePublished)
+            formatRun(citationRun)
+            stringWritten += transition + citation.datePublished
+            
+    #TODO write location
+            
+        if citation.dateAccessed != "":
+            transition = determineTransition(stringWritten)
+            citationRun = citationParagraph.add_run(transition + citation.dateAccessed)
+            formatRun(citationRun)
+            stringWritten += transition + citation.dateAccessed
 
         if (stringWritten.endswith(".") == False):
             citationRun = citationParagraph.add_run(".")
-            stringWritten += "."
             formatRun(citationRun)
+            stringWritten += "."
+            
 
         print(stringWritten)
 
 
     #Save the file
     document.save(documentName)
+
+
+    
+
+
+
 
