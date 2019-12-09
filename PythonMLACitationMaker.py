@@ -342,17 +342,16 @@ def formatRun(run):
     Function to determine what should go before the next string in an MLA citation
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-def determineTransition(stringToCheck):
+def determineTransition(stringToCheck, needComma):
     #if stringToCheck will be the first thing written, nothing goes before it
     if stringToCheck == "":
         return ""
-    #elif stringToCheck ends with a period or quotes, a space should go before the next string
-    elif (stringToCheck.endswith(".") == True) or (stringToCheck.endswith("\"") == True):
-        return " "
-    #otherwise a comma and space should go before the next string
-    else:
+    #elif stringToCheck doesnt end with the authors or title, a comma goes before it 
+    elif needComma:
         return ", "
-
+    else:
+        return " "
+    
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
     Main function execution
@@ -435,6 +434,7 @@ if excelFileOpened and citationFileOpened:
     for citation in citationList:
         #tracks everything that was written to document
         stringWritten = ""
+        needComma = False
         #add the paragraph for each citation
         citationParagraph = document.add_paragraph()
         formatParagraph(citationParagraph)
@@ -445,46 +445,51 @@ if excelFileOpened and citationFileOpened:
             stringWritten += citation.authors
             
         if citation.title != "":
-            transition = determineTransition(stringWritten)
+            transition = determineTransition(stringWritten, needComma)
             citationRun = citationParagraph.add_run(transition + citation.title)
             formatRun(citationRun)
             stringWritten += transition + citation.title
 
         if citation.container != "":
-            transition = determineTransition(stringWritten)
+            transition = determineTransition(stringWritten, needComma)
             citationRun = citationParagraph.add_run(transition + citation.container)
             formatRun(citationRun)
             citationRun.font.italic = True
             stringWritten += transition + citation.container
+            needComma = True
 
         if citation.contributors != "":
-            transition = determineTransition(stringWritten)
+            transition = determineTransition(stringWritten,needComma)
             citationRun = citationParagraph.add_run(transition + citation.contributors)
             formatRun(citationRun)
             stringWritten += transition + citation.contributors
+            needComma = True
             
         if citation.version != "":
-            transition = determineTransition(stringWritten)
+            transition = determineTransition(stringWritten, needComma)
             citationRun = citationParagraph.add_run(transition + citation.version)
             formatRun(citationRun)
             stringWritten += transition + citation.version
+            needComma = True
     #TODO write number
     #TODO write publisher
     
 
         if citation.datePublished != "":
-            transition = determineTransition(stringWritten)
+            transition = determineTransition(stringWritten, needComma)
             citationRun = citationParagraph.add_run(transition + citation.datePublished)
             formatRun(citationRun)
             stringWritten += transition + citation.datePublished
-            
+            needComma = True
+        
     #TODO write location
             
         if citation.dateAccessed != "":
-            transition = determineTransition(stringWritten)
+            transition = determineTransition(stringWritten, needComma)
             citationRun = citationParagraph.add_run(transition + citation.dateAccessed)
             formatRun(citationRun)
             stringWritten += transition + citation.dateAccessed
+            needComma = True
 
         if (stringWritten.endswith(".") == False):
             citationRun = citationParagraph.add_run(".")
