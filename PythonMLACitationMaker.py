@@ -594,7 +594,7 @@ if excelFileOpened and citationFileOpened:
         print(stringWritten)
         
     print("Citation page complete. Warning: Acryonyms may not be capitalized correctly")
-
+    input("Press Enter to quit")
 
 
 
