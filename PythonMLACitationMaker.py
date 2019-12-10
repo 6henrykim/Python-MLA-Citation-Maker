@@ -240,8 +240,16 @@ def inputExcelFileName():
     fileExtension = ".xlsx"
     
     #get a name of file from user
-    fileName = input("Enter name of Excel file: ")
-    
+    fileName = input("Enter name of Excel file or its file path: ")
+
+    #remove any quote marks around the name
+    if fileName.startswith("\""):
+        fileNameSplit = fileName.split("\"")
+        fileName = fileNameSplit[1]
+    if fileName.endswith("\""):
+        fileNameSplit = fileName.split("\"")
+        fileName = fileNameSplit[0]
+        
     #append .xlsx if input name doesn't have it
     if (fileName.endswith(fileExtension) == False):
         fileName += fileExtension
@@ -263,7 +271,15 @@ def inputCitationFileName():
     fileExtension = ".docx"
 
     #get a name of document from user
-    fileName = input("Where to save citations: ")
+    fileName = input("Enter name of Word Doc or file path to save to: ")
+
+    #remove any quote marks around the name
+    if fileName.startswith("\""):
+        fileNameSplit = fileName.split("\"")
+        fileName = fileNameSplit[1]
+    if fileName.endswith("\""):
+        fileNameSplit = fileName.split("\"")
+        fileName = fileNameSplit[0]
     
     #append .docx if input name doesn't have it
     if (fileName.endswith(fileExtension) == False):
