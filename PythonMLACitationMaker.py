@@ -9,6 +9,10 @@
 """
 
 #import libraries
+import tkinter
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
 from docx import Document
 from docx.shared import Pt
 from docx.shared import Inches
@@ -124,7 +128,7 @@ class Citation:
             #add the opening quote
             self.title = "\""
             #capitalize the title and store it in the variable
-            self.title += capitalizeTitle(uncapitalizedTitle)
+            self.title += capitalizeTitle(str(uncapitalizedTitle))
             #add the closing quote
             self.title += ".\""
            
@@ -230,63 +234,26 @@ class Citation:
         self.sortKey = self.sortKey.lower()
         
 
-"""
--------------------------------------------------------------------------------------------------------------------------------------------
-    Function to get the name of the output file from the user
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-def inputExcelFileName():
-    
-    fileExtension = ".xlsx"
-    
-    #get a name of file from user
-    fileName = input("Enter name of Excel file or its file path: ")
-
-    #remove any quote marks around the name
-    if fileName.startswith("\""):
-        fileNameSplit = fileName.split("\"")
-        fileName = fileNameSplit[1]
-    if fileName.endswith("\""):
-        fileNameSplit = fileName.split("\"")
-        fileName = fileNameSplit[0]
-        
-    #append .xlsx if input name doesn't have it
-    if (fileName.endswith(fileExtension) == False):
-        fileName += fileExtension
-
-    #return the name of the file
-    return fileName
-
 
 
 """
 -------------------------------------------------------------------------------------------------------------------------------------------
-    Function to get the name of the output file from the user
+    Function to get the path output file from the user by using tkinter filedialog window
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-def inputCitationFileName():
-    
-    #default name of the document
-    fileName = "citations.docx"
-    fileExtension = ".docx"
-
-    #get a name of document from user
-    fileName = input("Enter name of Word Doc or file path to save to: ")
-
-    #remove any quote marks around the name
-    if fileName.startswith("\""):
-        fileNameSplit = fileName.split("\"")
-        fileName = fileNameSplit[1]
-    if fileName.endswith("\""):
-        fileNameSplit = fileName.split("\"")
-        fileName = fileNameSplit[0]
-    
-    #append .docx if input name doesn't have it
-    if (fileName.endswith(fileExtension) == False):
-        fileName += fileExtension
-
-    #return the name of the file
-    return fileName
+def inputCitationFilePath():
+    try:
+        f = filedialog.asksaveasfile(mode='w', defaultextension=".docx")
+        if f is None: # asksaveasfile return `None` if dialog closed with "cancel".
+            return
+        else:
+            
+            f.close()
+            #return the file name
+            return f.name
+    except:
+        #return -1 if an error happened such as the file being open in another program
+        return -1
 
 
 
@@ -330,6 +297,7 @@ def convertNumToMonth(num):
 """
 def capitalizeTitle(uncapitalizedString):
 
+    uncapitalizedString = str(uncapitalizedString)
     capitalizedTitle = ""
     
     #list of words that shouldn't be capitalized including articles, prepositions, and coordinate conjunctives
@@ -442,46 +410,57 @@ def sortCitations(citationList):
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 
-print("MLA Citation Maker")    
+print("MLA Citation Maker")
+
 
 #flags for whether the files opened properly
 excelFileOpened = True
 citationFileOpened = True
 
-excelFileName = inputExcelFileName()
+input("Select Excel file to read from (Press Enter to continue): ")
+
+root = tkinter.Tk()
+root.withdraw()
+excelFilePath = filedialog.askopenfilename()
+print("\"" + str(excelFilePath) + "\"")
 #try to open the Excel file
 try:
     #load workbook 
-    workbook = load_workbook(filename = excelFileName)
+    workbook = load_workbook(filename = excelFilePath)
     #get the name of the first worksheet
     sheetName = workbook.sheetnames[0]
     #set the sheet using the name of the first worksheet
     worksheet = workbook[sheetName]
 except:
     excelFileOpened = False
-    print("Failed to open \"" + excelFileName + "\"")
+    print("Failed to open \"" + excelFilePath + "\"")
     #pause for user to see error message
     input("Press Enter to quit")
 
 
 #Try to open the Word doc if the Excel file opened
 if excelFileOpened:
-    
-    documentName = inputCitationFileName()
-    #try to open the specified file and save it to make sure it's not being used by another program
-    try:
-        document = Document(documentName)
-        document.save(documentName)
-    #display error message if file couldn't be opened and saved
-    except PermissionError:
+    input("Select place to save Word doc file (Press Enter to continue): ")
+    wordDocPath = inputCitationFilePath()
+    print("\"" + str(wordDocPath) + "\"")
+    if wordDocPath == None:
         citationFileOpened = False
-        print("Failed to open \"" + documentName + "\": make sure no program has the file open")
-        #pause for user to see error message
+        print("Error: No save location selected")
         input("Press Enter to quit")
-    #otherwise create the file
-    except:
-        document = Document()
-        document.save(documentName)
+    elif wordDocPath == -1:
+        citationFileOpened = False
+        print("Error: File could not be opened")
+        print("Make sure selected file is not open in another program and run again")
+        input("Press Enter to quit")
+    else:
+        #try to open the specified file and save it to make sure it's not being used by another program
+        try:
+            document = Document(wordDocPath)
+            document.save(wordDocPath)
+        #otherwise create the file
+        except:
+            document = Document()
+            document.save(wordDocPath)
 
 #Continue if both files opened
 if excelFileOpened and citationFileOpened:
@@ -608,14 +587,17 @@ if excelFileOpened and citationFileOpened:
             
 
         print(stringWritten)
-        
+
+
+    #Save the file
+    document.save(wordDocPath)
+    
     print("Citation page complete. Warning: Acryonyms may not be capitalized correctly")
     input("Press Enter to quit")
 
 
 
-    #Save the file
-    document.save(documentName)
+    
 
 
     
